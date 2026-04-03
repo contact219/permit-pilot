@@ -12,7 +12,7 @@ const { Pool } = pg;
 const PgSession = connectPgSimple(session);
 const app = express();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = false; // secure cookies disabled - running on HTTP
 
 app.set('trust proxy', 1);
 
@@ -38,6 +38,7 @@ app.use(
 
 app.use((req: any, _res: any, next: any) => {
   req.user = (req.session as any)?.user || null;
+  console.log(`${req.method} ${req.path} | sessionID: ${req.sessionID} | user: ${JSON.stringify(req.user)}`);
   next();
 });
 

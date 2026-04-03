@@ -4,7 +4,7 @@ interface Props {
 
 export default function ChecklistExport({ projectId }: Props) {
   const downloadChecklist = async () => {
-    const response = await fetch(`/api/export/${projectId}/checklist`);
+    const response = await fetch(`/api/export/${projectId}/checklist`, { credentials: 'include' });
     if (!response.ok) {
       alert('Failed to generate checklist');
       return;
@@ -21,7 +21,7 @@ export default function ChecklistExport({ projectId }: Props) {
   return (
     <button
       onClick={downloadChecklist}
-      className="px-3 py-2 bg-green-100 text-green-800 rounded hover:bg-green-200 text-sm"
+      className="px-3 py-2 bg-emerald-400/20 text-emerald-200 rounded-lg hover:bg-emerald-400/30 text-sm font-medium"
       title="Download compliance checklist"
     >
       📄 Checklist

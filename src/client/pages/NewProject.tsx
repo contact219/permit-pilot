@@ -95,13 +95,13 @@ export default function NewProject() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
-      <h1 className="text-3xl font-bold">New Project</h1>
+      <h1 className="text-3xl font-bold text-white">New Project</h1>
 
       {/* Progress Steps */}
       <div className="flex items-center space-x-4 mb-8">
         {[1, 2, 3].map((s) => (
           <div key={s} className="flex items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step >= s ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step >= s ? 'bg-blue-600 text-white' : 'bg-gray-200 text-slate-400'}`}>
               {s}
             </div>
             {s < 3 && <div className={`w-12 h-1 ${step > s ? 'bg-blue-600' : 'bg-gray-200'}`} />}
@@ -109,32 +109,32 @@ export default function NewProject() {
         ))}
       </div>
 
-      {error && <div className="p-4 bg-red-50 text-red-700 rounded">{error}</div>}
+      {error && <div className="rounded-xl border border-rose-300/30 bg-rose-500/10 p-4 text-rose-100">{error}</div>}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-white/10 bg-white/5 p-4 md:p-6">
         {/* Step 1: Location */}
         {step === 1 && (
-          <div className="bg-white p-6 rounded-lg shadow space-y-4">
+          <div className="bg-slate-900/70 p-6 rounded-xl border border-white/10 space-y-4">
             <h2 className="text-xl font-semibold">Location</h2>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Project Address</label>
+              <label className="block text-sm font-medium text-slate-200 mb-1">Project Address</label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="123 Main St, City, TX"
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-white/20 bg-slate-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Jurisdiction</label>
+              <label className="block text-sm font-medium text-slate-200 mb-1">Jurisdiction</label>
               <JurisdictionSearch onSelect={handleJurisdictionSelect} selectedId={jurisdictionId} />
               {jurisdictionName && (
-                <p className="text-sm text-gray-600 mt-1">Selected: {jurisdictionName}</p>
+                <p className="text-sm text-slate-300 mt-1">Selected: {jurisdictionName}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Project Type</label>
+              <label className="block text-sm font-medium text-slate-200 mb-2">Project Type</label>
               <div className="space-y-2">
                 {[
                   { value: 'room_addition', label: 'Room addition' },
@@ -165,21 +165,21 @@ export default function NewProject() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Square Footage (optional)</label>
+                <label className="block text-sm font-medium text-slate-200 mb-1">Square Footage (optional)</label>
                 <input
                   type="number"
                   value={squareFootage || ''}
                   onChange={(e) => setSquareFootage(parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-white/20 bg-slate-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Estimated Value (optional)</label>
+                <label className="block text-sm font-medium text-slate-200 mb-1">Estimated Value (optional)</label>
                 <input
                   type="number"
                   value={estimatedValue || ''}
                   onChange={(e) => setEstimatedValue(parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-white/20 bg-slate-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -190,33 +190,33 @@ export default function NewProject() {
                 onChange={(e) => setIsCommercial(e.target.checked)}
                 className="mr-2"
               />
-              <label className="text-sm text-gray-700">This is a commercial project</label>
+              <label className="text-sm text-slate-200">This is a commercial project</label>
             </div>
           </div>
         )}
 
         {/* Step 2: Details */}
         {step === 2 && (
-          <div className="bg-white p-6 rounded-lg shadow space-y-4">
+          <div className="bg-slate-900/70 p-6 rounded-xl border border-white/10 space-y-4">
             <h2 className="text-xl font-semibold">Project Details</h2>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
+              <label className="block text-sm font-medium text-slate-200 mb-1">Project Name</label>
               <input
                 type="text"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 placeholder="Add a name for this project"
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-white/20 bg-slate-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-medium text-slate-200 mb-1">Description</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={5}
                 placeholder="Describe your project in detail (e.g., 'Adding a 20x20 bedroom addition with bathroom, extending existing roofline, new electrical and plumbing') "
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-white/20 bg-slate-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -227,7 +227,7 @@ export default function NewProject() {
                   onChange={(e) => setInvolvesExisting(e.target.checked)}
                   className="mr-2"
                 />
-                <label className="text-sm text-gray-700">Involves existing structure</label>
+                <label className="text-sm text-slate-200">Involves existing structure</label>
               </div>
               <div className="flex items-center">
                 <input
@@ -236,7 +236,7 @@ export default function NewProject() {
                   onChange={(e) => setInHistoric(e.target.checked)}
                   className="mr-2"
                 />
-                <label className="text-sm text-gray-700">In historic district</label>
+                <label className="text-sm text-slate-200">In historic district</label>
               </div>
               <div className="flex items-center">
                 <input
@@ -245,7 +245,7 @@ export default function NewProject() {
                   onChange={(e) => setInFloodZone(e.target.checked)}
                   className="mr-2"
                 />
-                <label className="text-sm text-gray-700">In flood zone</label>
+                <label className="text-sm text-slate-200">In flood zone</label>
               </div>
             </div>
           </div>
@@ -253,7 +253,7 @@ export default function NewProject() {
 
         {/* Step 3: Review & Submit */}
         {step === 3 && (
-          <div className="bg-white p-6 rounded-lg shadow space-y-4">
+          <div className="bg-slate-900/70 p-6 rounded-xl border border-white/10 space-y-4">
             <h2 className="text-xl font-semibold">Review & Submit</h2>
             <div className="space-y-2 text-sm">
               <p><strong>Project Name:</strong> {projectName}</p>
@@ -268,11 +268,11 @@ export default function NewProject() {
               <p><strong>In Flood Zone:</strong> {inFloodZone ? 'Yes' : 'No'}</p>
               <div className="mt-4">
                 <strong>Project Description:</strong>
-                <p className="mt-1 text-gray-700 whitespace-pre-wrap">{description}</p>
+                <p className="mt-1 text-slate-200 whitespace-pre-wrap">{description}</p>
               </div>
             </div>
-            <div className="bg-yellow-50 border border-yellow-200 rounded p-4">
-              <p className="text-sm text-yellow-800">
+            <div className="bg-amber-500/10 border border-amber-300/30 rounded p-4">
+              <p className="text-sm text-amber-100">
                 By clicking Submit, our AI will analyze your project and identify all required permits based on local jurisdiction requirements. This may take 10-30 seconds.
               </p>
             </div>
@@ -281,18 +281,18 @@ export default function NewProject() {
 
         <div className="flex justify-between">
           {step > 1 ? (
-            <button type="button" onClick={() => setStep(step - 1)} className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
+            <button type="button" onClick={() => setStep(step - 1)} className="px-4 py-2 border border-white/20 bg-slate-800 text-white rounded hover:bg-gray-50">
               Back
             </button>
           ) : (
             <div />
           )}
           {step < 3 ? (
-            <button type="button" onClick={nextStep} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            <button type="button" onClick={nextStep} className="px-4 py-2 bg-cyan-500 text-slate-950 rounded-lg font-medium hover:bg-cyan-400">
               Continue
             </button>
           ) : (
-            <button type="submit" disabled={loading} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+            <button type="submit" disabled={loading} className="px-4 py-2 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-400 disabled:opacity-50">
               {loading ? 'Analyzing...' : 'Submit & Analyze'}
             </button>
           )}

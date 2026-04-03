@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { get, post, del } from '../lib/api';
 import StatusBadge from '../components/StatusBadge';
 import ChecklistExport from '../components/ChecklistExport';
+import FormZipExport from '../components/FormZipExport';
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
@@ -25,48 +26,57 @@ export default function Dashboard() {
     catch { alert('Failed to start checkout'); }
   };
 
-  if (isLoading) return <div className="p-8">Loading projects...</div>;
-  if (error) return <div className="p-8 text-red-600">Error loading projects</div>;
+  if (isLoading) return <div className="rounded-2xl border border-white/10 bg-white/5 p-8">Loading projects...</div>;
+  if (error) return <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-8 text-rose-200">Error loading projects</div>;
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">My Projects</h1>
-        <div className="flex gap-3">
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${planTier === 'free' ? 'bg-gray-200 text-gray-800' : planTier === 'contractor' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
-            {planTier.charAt(0).toUpperCase() + planTier.slice(1)}
-          </span>
-          {planTier === 'free' && (
-            <div className="flex gap-2">
-              <button onClick={() => handleUpgrade('contractor')} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Upgrade to Contractor</button>
-              <button onClick={() => handleUpgrade('homeowner')} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Homeowner Plan</button>
-            </div>
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Project Command Center</h1>
+            <p className="mt-1 text-slate-300">Free tier: up to 2 projects and 10 AI analyses/day.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${planTier === 'free' ? 'bg-slate-700 text-slate-100' : planTier === 'contractor' ? 'bg-cyan-400/20 text-cyan-200' : 'bg-emerald-400/20 text-emerald-200'}`}>
+              {planTier.charAt(0).toUpperCase() + planTier.slice(1)}
+            </span>
+            {isAdmin && <button onClick={() => navigate('/admin')} className="px-4 py-2 rounded-lg bg-violet-500/80 text-white hover:bg-violet-500">Admin Panel</button>}
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {planTier === 'free' ? (
+            <>
+              <button onClick={() => handleUpgrade('contractor')} className="px-4 py-2 rounded-lg bg-cyan-500 text-slate-950 font-medium hover:bg-cyan-400">Upgrade to Contractor</button>
+              <button onClick={() => handleUpgrade('homeowner')} className="px-4 py-2 rounded-lg bg-emerald-500 text-slate-950 font-medium hover:bg-emerald-400">Homeowner Plan</button>
+            </>
+          ) : (
+            <button onClick={async () => { const { url } = await get<{ url: string }>('/api/billing/portal'); window.location.href = url; }} className="px-4 py-2 rounded-lg bg-slate-700 text-white hover:bg-slate-600">Manage Subscription</button>
           )}
-          {planTier !== 'free' && (
-            <button onClick={async () => { const { url } = await get<{ url: string }>('/api/billing/portal'); window.location.href = url; }} className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">Manage Subscription</button>
-          )}
-          {isAdmin && <button onClick={() => navigate('/admin')} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Admin Panel</button>}
+          <button onClick={() => navigate('/projects/new')} className="px-4 py-2 rounded-lg bg-indigo-500 text-white hover:bg-indigo-400">+ New Project</button>
         </div>
       </div>
-      <p className="text-gray-600">Free tier: up to 2 projects, 10 AI analyses/day.</p>
+
       {!projects || projects.length === 0 ? (
-        <div className="bg-white p-8 rounded-lg shadow text-center">
-          <p className="text-gray-600 mb-4">No projects yet.</p>
-          <button onClick={() => navigate('/projects/new')} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Create Project</button>
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
+          <p className="mb-4 text-slate-300">No projects yet.</p>
+          <button onClick={() => navigate('/projects/new')} className="px-4 py-2 rounded-lg bg-cyan-500 text-slate-950 font-medium hover:bg-cyan-400">Create Project</button>
         </div>
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {projects.map((project: any) => (
-            <div key={project.id} className="bg-white rounded-lg shadow p-6">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-semibold">{project.name}</h3>
+            <div key={project.id} className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg shadow-slate-900/40">
+              <div className="mb-3 flex items-start justify-between">
+                <h3 className="text-lg font-semibold text-white">{project.name}</h3>
                 <StatusBadge status={project.status} />
               </div>
-              <p className="text-gray-600 text-sm mb-4">{project.address}</p>
-              <div className="flex gap-2">
-                <button onClick={() => navigate(`/projects/${project.id}`)} className="flex-1 px-3 py-2 bg-gray-100 text-gray-800 rounded hover:bg-gray-200">View Details</button>
+              <p className="mb-4 text-sm text-slate-300">{project.address}</p>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => navigate(`/projects/${project.id}`)} className="px-3 py-2 rounded-lg bg-white/10 text-slate-100 hover:bg-white/20">View Details</button>
                 <ChecklistExport projectId={project.id} />
-                <button onClick={() => deleteMutation.mutate(project.id)} className="px-3 py-2 text-red-600 hover:bg-red-50 rounded" title="Delete">🗑️</button>
+                <FormZipExport projectId={project.id} />
+                <button onClick={() => deleteMutation.mutate(project.id)} className="px-3 py-2 rounded-lg bg-rose-500/15 text-rose-200 hover:bg-rose-500/25" title="Delete">🗑️</button>
               </div>
             </div>
           ))}

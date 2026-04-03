@@ -1,133 +1,81 @@
+import { and, eq } from "drizzle-orm";
 import { db } from "../src/server/db";
 import { jurisdictions, permitTypes } from "./schema";
+import seedJurisdictions from "./seeds/jurisdictions.json";
 
-const seedJurisdictions = [
-  {
-    name: "Frisco, TX",
-    state: "TX",
-    county: "Collin",
-    city: "Frisco",
-    portalUrl: "https://www.friscotexas.gov/1489/Building-Permits",
-    submissionMethod: "online",
-    avgReviewDays: 10,
-    permitTypes: [
-      {
-        name: "Residential Building Permit",
-        code: "RES_BLDG",
-        projectTypes: ["room_addition", "new_construction", "garage", "adu"],
-        requiredDocs: [
-          { name: "Site Plan", description: "Dimensioned plot plan showing property lines, setbacks, and structure footprint" },
-          { name: "Floor Plan", description: "Dimensioned drawings of all affected areas" },
-          { name: "Elevation Drawings", description: "All four exterior elevations" },
-          { name: "Energy Compliance", description: "Texas Energy Code compliance documentation (Manual J for HVAC)" }
-        ],
-        feeBase: 150,
-        feePerSqft: 0.18,
-        formUrls: [
-          "https://www.friscotexas.gov/DocumentCenter/View/9383/Building-Permit-Application-PDF"
-        ],
-        inspectionStages: [
-          { name: "Foundation", timing: "Before pour" },
-          { name: "Frame", timing: "Before drywall" },
-          { name: "Final", timing: "Before occupancy" }
-        ]
-      },
-      {
-        name: "Electrical Permit",
-        code: "ELEC",
-        projectTypes: ["room_addition", "electrical_upgrade", "new_construction"],
-        requiredDocs: [
-          { name: "Electrical Plan", description: "Panel schedule and circuit diagram" }
-        ],
-        feeBase: 75,
-        feePerSqft: 0.05,
-        formUrls: [
-          "https://www.friscotexas.gov/DocumentCenter/View/9384/Electrical-Permit-Application-PDF"
-        ]
-      },
-      {
-        name: "Mechanical Permit",
-        code: "MECH",
-        projectTypes: ["hvac_replacement", "room_addition", "new_construction"],
-        requiredDocs: [
-          { name: "Equipment Specs", description: "Manufacturer specs for all HVAC equipment" },
-          { name: "Manual J Calculation", description: "Load calculation for new/modified zones" }
-        ],
-        feeBase: 65,
-        formUrls: [
-          "https://www.friscotexas.gov/DocumentCenter/View/9385/Mechanical-Permit-Application-PDF"
-        ]
-      },
-      {
-        name: "Plumbing Permit",
-        code: "PLMB",
-        projectTypes: ["plumbing_modification", "room_addition", "new_construction"],
-        requiredDocs: [
-          { name: "Plumbing Plan", description: "Isometric diagram of all new/modified lines" }
-        ],
-        feeBase: 65,
-        formUrls: [
-          "https://www.friscotexas.gov/DocumentCenter/View/9386/Plumbing-Permit-Application-PDF"
-        ]
-      }
-    ]
-  },
-  {
-    name: "McKinney, TX",
-    state: "TX",
-    county: "Collin",
-    city: "McKinney",
-    portalUrl: "https://www.mckinneytexas.org/386/Building-Permits",
-    submissionMethod: "online",
-    avgReviewDays: 12
-  },
-  {
-    name: "Allen, TX",
-    state: "TX",
-    county: "Collin",
-    city: "Allen",
-    portalUrl: "https://www.cityofallen.org/257/Building-Permits",
-    submissionMethod: "online",
-    avgReviewDays: 8
-  },
-  {
-    name: "Plano, TX",
-    state: "TX",
-    county: "Collin",
-    city: "Plano",
-    portalUrl: "https://www.plano.gov/254/Building-Permits",
-    submissionMethod: "online",
-    avgReviewDays: 15
-  },
-  {
-    name: "Wylie, TX",
-    state: "TX",
-    county: "Collin",
-    city: "Wylie",
-    portalUrl: "https://www.wylietexas.gov/186/Building-Permits",
-    submissionMethod: "in-person",
-    avgReviewDays: 7
+type SeedPermitType = {
+  name: string;
+  code?: string;
+  projectTypes?: string[];
+  requiredDocs?: unknown;
+  feeBase?: number;
+  feePerSqft?: number;
+  inspectionStages?: unknown;
+  formUrls?: string[];
+};
+
+type SeedJurisdiction = {
+  name: string;
+  state: string;
+  county?: string;
+  city?: string;
+  portalUrl?: string;
+  submissionMethod?: string;
+  avgReviewDays?: number;
+  permitTypes?: SeedPermitType[];
+};
+
+async function upsertJurisdiction(seed: SeedJurisdiction) {
+  const { permitTypes: permitSeedData, ...jurisdictionData } = seed;
+
+  const existing = await db
+    .select({ id: jurisdictions.id })
+    .from(jurisdictions)
+    .where(and(eq(jurisdictions.name, seed.name), eq(jurisdictions.state, seed.state)))
+    .limit(1);
+
+  const jurisdictionId = existing[0]?.id
+    ? existing[0].id
+    : (
+        await db
+          .insert(jurisdictions)
+          .values(jurisdictionData)
+          .returning({ id: jurisdictions.id })
+      )[0].id;
+
+  if (!permitSeedData?.length) {
+    return;
   }
-];
 
-async function seed() {
-  for (const j of seedJurisdictions) {
-    const { permitTypes: ptData, ...jurisdictionData } = j;
-    const [jurisdiction] = await db.insert(jurisdictions).values(jurisdictionData).returning();
-    
-    if (ptData) {
-      for (const pt of ptData) {
-        await db.insert(permitTypes as any).values({
-          ...pt,
-          jurisdictionId: jurisdiction.id
-        });
-      }
+  for (const permit of permitSeedData) {
+    const existingPermit = await db
+      .select({ id: permitTypes.id })
+      .from(permitTypes)
+      .where(
+        and(
+          eq(permitTypes.jurisdictionId, jurisdictionId),
+          eq(permitTypes.name, permit.name),
+        ),
+      )
+      .limit(1);
+
+    if (existingPermit[0]?.id) {
+      continue;
     }
+
+    await db.insert(permitTypes as any).values({ ...permit, jurisdictionId } as any);
   }
-  console.log("Seeded jurisdictions and permit types");
 }
 
-seed().catch((e) => {
-  console.error(e);
+async function seed() {
+  for (const jurisdiction of seedJurisdictions as SeedJurisdiction[]) {
+    await upsertJurisdiction(jurisdiction);
+  }
+
+  console.log("Seeded jurisdiction data");
+}
+
+seed().catch((error) => {
+  console.error(error);
   process.exit(1);
 });

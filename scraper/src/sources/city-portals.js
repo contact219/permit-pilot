@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
-import { db } from '../shared/db';
-import { jurisdictions, permitTypes } from '../shared/schema';
+import { db } from '../shared/db.js';
+import { jurisdictions, permitTypes } from '../shared/schema.js';
 import { eq, and } from 'drizzle-orm';
 
 export async function scrapeCityPortals(jurisdictionId) {

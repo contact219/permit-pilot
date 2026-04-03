@@ -1,10 +1,10 @@
 import { Queue, Worker, QueueScheduler } from 'bullmq';
 import Ioredis from 'ioredis';
-import { scrapeMunicode } from './sources/municode';
-import { scrapeSocrata } from './sources/socrata';
-import { scrapeCityPortals } from './sources/city-portals';
-import { db } from './shared/db';
-import { scraperJobs } from './shared/schema';
+import { scrapeMunicode } from './sources/municode.js';
+import { scrapeSocrata } from './sources/socrata.js';
+import { scrapeCityPortals } from './sources/city-portals.js';
+import { db } from './shared/db.js';
+import { scraperJobs } from './shared/schema.js';
 import { eq } from 'drizzle-orm';
 
 const connection = new Ioredis({ host: process.env.REDIS_HOST || 'localhost', port: Number(process.env.REDIS_PORT) || 6379 });

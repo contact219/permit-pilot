@@ -18,7 +18,7 @@ export function App({}: AppProps) {
     queryKey: ['user'],
     queryFn: async () => {
       try {
-        const res = await fetch('/api/auth/me');
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
         if (!res.ok) return null;
         return res.json();
       } catch {
@@ -47,7 +47,7 @@ export function App({}: AppProps) {
                 )}
                 <button
                   onClick={async () => {
-                    await fetch('/api/auth/logout', { method: 'POST' });
+                    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
                     window.location.href = '/';
                   }}
                   className="rounded-md bg-rose-500/10 px-3 py-1.5 text-rose-300 transition hover:bg-rose-500/20"

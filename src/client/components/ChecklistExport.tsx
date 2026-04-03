@@ -4,7 +4,7 @@ interface Props {
 
 export default function ChecklistExport({ projectId }: Props) {
   const downloadChecklist = async () => {
-    const response = await fetch(`/api/export/${projectId}/checklist`);
+    const response = await fetch(`/api/export/${projectId}/checklist`, { credentials: 'include' });
     if (!response.ok) {
       alert('Failed to generate checklist');
       return;

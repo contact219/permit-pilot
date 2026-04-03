@@ -4,7 +4,7 @@ interface Props {
 
 export default function FormZipExport({ projectId }: Props) {
   const downloadForms = async () => {
-    const response = await fetch(`/api/export/${projectId}/forms`);
+    const response = await fetch(`/api/export/${projectId}/forms`, { credentials: 'include' });
     if (!response.ok) {
       alert('No permit forms are currently available for this project.');
       return;

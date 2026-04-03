@@ -293,7 +293,12 @@ export default function NewProject() {
             </button>
           ) : (
             <button type="submit" disabled={loading} className="px-4 py-2 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-400 disabled:opacity-50">
-              {loading ? 'Analyzing...' : 'Submit & Analyze'}
+              {loading ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true" />
+                  Analyzing...
+                </span>
+              ) : 'Submit & Analyze'}
             </button>
           )}
         </div>

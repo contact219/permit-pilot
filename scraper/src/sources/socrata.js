@@ -2,45 +2,54 @@ import { db } from '../shared/db.js';
 import { jurisdictions, permitTypes } from '../shared/schema.js';
 import { eq, and } from 'drizzle-orm';
 
+const DATASETS = {
+  'Dallas, TX': { host: 'www.dallasopendata.com', dataset: 'e7gq-4sah' },
+  'Fort Worth, TX': { host: 'data.fortworthtexas.gov', dataset: 'permits' },
+};
+
+function deriveCode(name) {
+  const lower = name.toLowerCase();
+  if (lower.includes('electrical') || lower.includes('electric')) return 'ELEC';
+  if (lower.includes('plumbing')) return 'PLMB';
+  if (lower.includes('mechanical') || lower.includes('hvac')) return 'MECH';
+  if (lower.includes('pool')) return 'POOL';
+  if (lower.includes('fence')) return 'FENCE';
+  if (lower.includes('demolition')) return 'DEMO';
+  if (lower.includes('sign')) return 'SIGN';
+  if (lower.includes('roof')) return 'ROOF';
+  if (lower.includes('gas')) return 'GAS';
+  return 'BLDG';
+}
+
 export async function scrapeSocrata(jurisdictionId) {
+  const rows = await db.select().from(jurisdictions).where(eq(jurisdictions.id, jurisdictionId));
+  const jur = rows[0];
+  if (!jur) return { jurisdictionId, status: 'skipped', message: 'Jurisdiction not found' };
+
+  const config = DATASETS[jur.name];
+  if (!config) return { jurisdictionId, status: 'skipped', message: 'No Socrata dataset for ' + jur.name };
+
   try {
-    const [jur] = await db.select().from(jurisdictions).where(eq(jurisdictions.id, jurisdictionId));
-    if (!jur) throw new Error('Jurisdiction not found');
-
-    // Example Socrata open data endpoint (Dallas, Fort Worth, etc.)
-    // In practice, you'd configure specific dataset IDs per jurisdiction
-    const datasets = {
-      'Dallas': 'qq2h-uv8h', // example dataset ID
-      'Fort Worth': 'k6ic-7j7p',
-    };
-    const dataset = datasets[jur.city];
-    if (!dataset) return { jurisdictionId, status: 'skipped', message: 'No Socrata dataset configured' };
-
-    const response = await fetch(`https://data.cityofdallas.com/resource/${dataset}.json?$limit=1000`);
+    const url = 'https://' + config.host + '/resource/' + config.dataset + '.json?$limit=200';
+    const response = await fetch(url, { signal: AbortSignal.timeout(15000) });
+    if (!response.ok) return { jurisdictionId, status: 'failed', error: 'HTTP ' + response.status };
     const data = await response.json();
+    if (!Array.isArray(data) || data.length === 0) return { jurisdictionId, status: 'skipped', message: 'No data' };
 
-    // Transform to permit types (simplified mapping)
-    const permits = data.map(item => ({
-      name: item.permit_type || item.permitType || 'Unknown Permit',
-      code: (item.permit_code || item.permitCode || 'UNK').toUpperCase(),
-      feeBase: parseFloat(item.fee_base || item.feeBase || 0),
-      feePerSqft: parseFloat(item.fee_per_sqft || item.feePerSqft || 0),
-      requiredDocs: item.required_documents ? JSON.parse(item.required_documents) : [],
-    }));
-
-    for (const permit of permits) {
-      const existing = await db.select().from(permitTypes).where(and(
-        eq(permitTypes.jurisdictionId, jurisdictionId),
-        eq(permitTypes.code, permit.code)
-      ));
-      if (existing.length > 0) {
-        await db.update(permitTypes).set(permit).where(eq(permitTypes.id, existing[0].id));
-      } else {
-        await db.insert(permitTypes).values({ ...permit, jurisdictionId });
+    const seen = new Set();
+    let permitsUpserted = 0;
+    for (const item of data) {
+      const name = item.permit_type || item.permitType || item.type;
+      if (!name || seen.has(name)) continue;
+      seen.add(name);
+      const code = deriveCode(name);
+      const existing = await db.select().from(permitTypes).where(and(eq(permitTypes.jurisdictionId, jurisdictionId), eq(permitTypes.code, code)));
+      if (existing.length === 0) {
+        await db.insert(permitTypes).values({ jurisdictionId, name: name.substring(0, 200), code, notes: 'Source: Socrata' });
+        permitsUpserted++;
       }
     }
-
-    return { jurisdictionId, permitsAdded: permits.length, status: 'completed' };
+    return { jurisdictionId, city: jur.name, permitsUpserted, status: 'completed' };
   } catch (error) {
     return { jurisdictionId, status: 'failed', error: error.message };
   }

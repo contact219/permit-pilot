@@ -36,8 +36,9 @@ router.post('/', requireAuth, async (req: any, res: any) => {
     const analysis = await analyzeProject({ description, projectType, squareFootage, address, jurisdiction: jurisdiction.name, estimatedValue, isCommercial: projectType?.includes('commercial') || false, existingStructure: true }, jurisdiction);
     await db.update(projects).set({ aiSummary: analysis.plainEnglishSummary }).where(eq(projects.id, project.id));
 
+    console.log('Claude returned permits:', JSON.stringify(analysis.requiredPermits));
     for (const permit of analysis.requiredPermits) {
-      const [pt] = await db.select().from(permitTypes).where(and(eq(permitTypes.jurisdictionId, jurisdictionId), eq(permitTypes.code, permit.code)));
+      const [pt] = await db.select().from(permitTypes).where(and(eq(permitTypes.jurisdictionId, jurisdictionId), sql`lower(${permitTypes.code}) = lower(${permit.code})`));
       if (pt) await db.insert(projectPermits).values({ projectId: project.id, permitTypeId: pt.id, status: 'not_started', notes: `Priority: ${permit.priority}. ${permit.reason}` });
     }
 
@@ -55,8 +56,10 @@ router.get('/', requireAuth, async (req: any, res: any) => {
 router.get('/:id', requireAuth, async (req: any, res: any) => {
   try {
     const [project] = await db.select().from(projects).where(and(eq(projects.id, req.params.id), eq(projects.userId, req.user.id)));
+    console.log('PROJECT:', project ? project.id : 'NOT FOUND');
     if (!project) return res.status(404).json({ error: 'Project not found' });
     const [jurisdiction] = await db.select().from(jurisdictions).where(eq(jurisdictions.id, project.jurisdictionId!));
+    console.log('JURISDICTION:', jurisdiction ? jurisdiction.name : 'NOT FOUND');
     const permits = await db.select({ pp: projectPermits, pt: permitTypes }).from(projectPermits).leftJoin(permitTypes, eq(projectPermits.permitTypeId, permitTypes.id)).where(eq(projectPermits.projectId, req.params.id));
     res.json({ project, jurisdiction, permits });
   } catch (e) { res.status(500).json({ error: 'Failed to fetch project' }); }
@@ -64,15 +67,33 @@ router.get('/:id', requireAuth, async (req: any, res: any) => {
 
 router.post('/:id/analyze', requireAuth, async (req: any, res: any) => {
   try {
+    console.log('ANALYZE START for project:', req.params.id);
     const rate = await checkRateLimit(req.user.id);
+    console.log('RATE LIMIT:', JSON.stringify(rate));
     if (!rate.allowed) return res.status(429).json({ error: 'Rate limit exceeded', resetAt: new Date(rate.resetAt).toISOString() });
     const [project] = await db.select().from(projects).where(and(eq(projects.id, req.params.id), eq(projects.userId, req.user.id)));
+    console.log('PROJECT:', project ? project.id : 'NOT FOUND');
     if (!project) return res.status(404).json({ error: 'Project not found' });
     const [jurisdiction] = await db.select().from(jurisdictions).where(eq(jurisdictions.id, project.jurisdictionId!));
+    console.log('JURISDICTION:', jurisdiction ? jurisdiction.name : 'NOT FOUND');
     const analysis = await analyzeProject({ description: project.description as string, projectType: project.projectType as string, squareFootage: project.squareFootage as number | undefined, address: project.address as string, jurisdiction: jurisdiction.name, estimatedValue: project.estimatedValue as unknown as number | undefined, isCommercial: (project.projectType as string | null)?.includes('commercial') || false, existingStructure: true }, jurisdiction as any);
     await db.update(projects).set({ aiSummary: analysis.plainEnglishSummary }).where(eq(projects.id, req.params.id));
+    await db.delete(projectPermits).where(eq(projectPermits.projectId, req.params.id));
+    console.log('Claude returned permits:', JSON.stringify(analysis.requiredPermits));
+    for (const permit of analysis.requiredPermits) {
+      const [pt] = await db.select().from(permitTypes).where(and(
+        eq(permitTypes.jurisdictionId, project.jurisdictionId!),
+        sql`lower(${permitTypes.code}) = lower(${permit.code})`
+      ));
+      if (pt) {
+        await db.insert(projectPermits).values({ projectId: req.params.id, permitTypeId: pt.id, status: 'not_started', notes: `Priority: ${permit.priority}. ${permit.reason}` });
+        console.log('Inserted permit:', pt.name);
+      } else {
+        console.log('No DB match for code:', permit.code);
+      }
+    }
     res.json({ analysis, rateLimit: rate });
-  } catch (e) { res.status(500).json({ error: 'Analysis failed' }); }
+  } catch (e) { console.error('Analysis error:', e); res.status(500).json({ error: 'Analysis failed' }); }
 });
 
 router.delete('/:id', requireAuth, async (req: any, res: any) => {

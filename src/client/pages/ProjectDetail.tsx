@@ -11,7 +11,7 @@ export default function ProjectDetail() {
   const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({ queryKey: ['project', id], queryFn: () => get<any>(`/api/projects/${id}`), enabled: !!id });
-  const reanalyzeMutation = useMutation({ mutationFn: () => post<any>(`/api/projects/${id}/analyze`, {}), onSuccess: (d: any) => queryClient.setQueryData(['project', id], (old: any) => ({ ...old, analysis: d.analysis })) });
+  const reanalyzeMutation = useMutation({ mutationFn: () => post<any>(`/api/projects/${id}/analyze`, {}), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }) });
   const deleteMutation = useMutation({ mutationFn: () => del(`/api/projects/${id}`), onSuccess: () => navigate('/dashboard') });
 
   if (isLoading) return <div className="rounded-2xl border border-white/10 bg-white/5 p-8">Loading project...</div>;

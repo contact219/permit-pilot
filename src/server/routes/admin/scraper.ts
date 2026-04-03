@@ -1,4 +1,9 @@
 import { Router } from 'express';
+import { Queue } from 'bullmq';
+import { Redis } from 'ioredis';
+
+const redisConnection = new Redis({ host: 'redis', port: 6379, maxRetriesPerRequest: null });
+const scraperQueue = new Queue('scraper', { connection: redisConnection });
 import { db } from '../../db.js';
 import { jurisdictions, scraperJobs } from '../../../../db/schema.js';
 import { eq, sql } from 'drizzle-orm';
@@ -14,6 +19,7 @@ router.post('/run', requireAdmin, async (req: any, res: any) => {
     for (const jur of jurList) {
       const [job] = await db.insert(scraperJobs).values({ source, status: 'pending', startedAt: null, completedAt: null, result: null, error: null }).returning({ id: scraperJobs.id });
       jobIds.push(job.id);
+      await scraperQueue.add('scrape', { jobId: job.id, source, jurisdictionId: jur.id });
       console.log(`Queued job ${job.id} for jurisdiction ${jur.id}`);
     }
     res.status(201).json({ jobsCreated: jobIds.length, jobIds });

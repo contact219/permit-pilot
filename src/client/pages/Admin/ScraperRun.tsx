@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { post } from '../../lib/api';
+import AdminLayout from './Layout';
 
 export default function AdminScraperRun() {
   const queryClient = useQueryClient();
@@ -13,28 +14,20 @@ export default function AdminScraperRun() {
   });
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Run Scraper</h1>
+    <AdminLayout>
       <div className="space-y-4">
-        <p className="text-gray-600">Trigger manual scraping jobs for all jurisdictions. Results will appear in the logs.</p>
-        <div className="flex gap-4">
-          <button onClick={() => runMutation.mutate('all')} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-            Run All Sources
-          </button>
-          <button onClick={() => runMutation.mutate('municode')} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-            Run Municode Only
-          </button>
-          <button onClick={() => runMutation.mutate('socrata')} className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
-            Run Socrata Only
-          </button>
-          <button onClick={() => runMutation.mutate('city-portals')} className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700">
-            Run City Portals Only
-          </button>
+        <h1 className="text-2xl font-bold text-white">Run Scraper Jobs</h1>
+        <p className="text-slate-300">Trigger manual scraping for all active jurisdictions. Jobs are recorded in the scraper logs table.</p>
+        <div className="flex flex-wrap gap-3">
+          <button onClick={() => runMutation.mutate('all')} className="rounded-lg bg-cyan-500 px-4 py-2 font-medium text-slate-950 hover:bg-cyan-400">Run All Sources</button>
+          <button onClick={() => runMutation.mutate('municode')} className="rounded-lg bg-emerald-500 px-4 py-2 font-medium text-slate-950 hover:bg-emerald-400">Municode</button>
+          <button onClick={() => runMutation.mutate('socrata')} className="rounded-lg bg-violet-500 px-4 py-2 font-medium text-white hover:bg-violet-400">Socrata</button>
+          <button onClick={() => runMutation.mutate('city-portals')} className="rounded-lg bg-amber-500 px-4 py-2 font-medium text-slate-950 hover:bg-amber-400">City Portals</button>
         </div>
-        {runMutation.isPending && <p className="text-blue-600">Job started...</p>}
-        {runMutation.isSuccess && <p className="text-green-600">Job created successfully!</p>}
-        {runMutation.isError && <p className="text-red-600">Error: {(runMutation.error as Error).message}</p>}
+        {runMutation.isPending && <p className="text-cyan-200">Job started...</p>}
+        {runMutation.isSuccess && <p className="text-emerald-200">Job created successfully.</p>}
+        {runMutation.isError && <p className="text-rose-200">Error: {(runMutation.error as Error).message}</p>}
       </div>
-    </div>
+    </AdminLayout>
   );
 }

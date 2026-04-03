@@ -12,6 +12,9 @@ const { Pool } = pg;
 const PgSession = connectPgSimple(session);
 const app = express();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const isProduction = process.env.NODE_ENV === 'production';
+
+app.set('trust proxy', 1);
 
 app.use('/api/billing/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json());
@@ -26,7 +29,7 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: false,
+      secure: isProduction,
       sameSite: 'lax',
       maxAge: 1000 * 60 * 60 * 24 * 7,
     },

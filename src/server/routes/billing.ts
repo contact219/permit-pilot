@@ -7,12 +7,18 @@ import { createCheckoutSession, createCustomerPortalSession, handleWebhook } fro
 
 const router = Router();
 const requireAuth = (req: any, res: any, next: any) => { if (!req.user) return res.status(401).json({ error: 'Unauthorized' }); next(); };
+const getFrontendUrl = (req: any) => {
+  if (process.env.FRONTEND_URL) return process.env.FRONTEND_URL;
+  const protocol = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'http';
+  const host = req.headers.host;
+  return `${protocol}://${host}`;
+};
 
 router.post('/checkout', requireAuth, async (req: any, res: any) => {
   try {
     const { planTier } = req.body;
     if (!['contractor', 'homeowner'].includes(planTier)) return res.status(400).json({ error: 'Invalid plan tier' });
-    const session = await createCheckoutSession(req.user.id, req.user.email, planTier);
+    const session = await createCheckoutSession(req.user.id, req.user.email, planTier, getFrontendUrl(req));
     res.json({ sessionId: session.id, url: session.url });
   } catch (e) { console.error(e); res.status(500).json({ error: 'Failed to create checkout session' }); }
 });
@@ -28,7 +34,7 @@ router.get('/portal', requireAuth, async (req: any, res: any) => {
   try {
     const [user] = await db.select().from(users).where(eq(users.id, req.user.id));
     if (!user?.stripeCustomerId) return res.status(404).json({ error: 'No subscription found' });
-    const session = await createCustomerPortalSession(user.stripeCustomerId);
+    const session = await createCustomerPortalSession(user.stripeCustomerId, getFrontendUrl(req));
     res.json({ url: session.url });
   } catch (e) { res.status(500).json({ error: 'Failed to create portal session' }); }
 });

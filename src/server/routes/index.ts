@@ -1,0 +1,9 @@
+export { default as authRouter } from './auth.js';
+export { default as projectsRouter } from './projects.js';
+export { default as jurisdictionsRouter } from './jurisdictions.js';
+export { default as exportRouter } from './export.js';
+export { default as billingRouter } from './billing.js';
+export { default as adminJurisdictionsRouter } from './admin/jurisdictions.js';
+export { default as adminUsersRouter } from './admin/users.js';
+export { default as adminScraperRouter } from './admin/scraper.js';
+export { default as adminScraperLogsRouter } from './admin/scraperLogs.js';

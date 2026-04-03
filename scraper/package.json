@@ -1,0 +1,14 @@
+{
+  "name": "permit-pilot-scraper",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "playwright": "^1.43.0",
+    "bullmq": "^5.39.0",
+    "ioredis": "^5.4.2",
+    "postgres": "^3.4.4"
+  }
+}

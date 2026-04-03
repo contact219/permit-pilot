@@ -1,0 +1,12 @@
+{
+  email admin@permitpilot.com
+}
+
+permitpilot.com {
+  reverse_proxy app:3000
+}
+
+localhost {
+  reverse_proxy app:3000
+  tls internal
+}

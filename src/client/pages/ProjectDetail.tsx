@@ -27,6 +27,11 @@ export default function ProjectDetail() {
             <h1 className="text-3xl font-bold text-white">{project.name}</h1>
             <p className="text-slate-300">{project.address}</p>
             <p className="text-sm text-slate-400">Jurisdiction: {jurisdiction?.name || 'Unknown'}</p>
+            {jurisdiction?.lastVerified && (
+              <p className="mt-1 inline-flex rounded-full border border-cyan-200/30 bg-cyan-400/10 px-3 py-1 text-xs text-cyan-100">
+                Data last verified: {new Date(jurisdiction.lastVerified).toLocaleDateString()}
+              </p>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
             <ChecklistExport projectId={project.id} />
@@ -42,7 +47,9 @@ export default function ProjectDetail() {
       <div className="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 p-6">
         <h2 className="mb-2 text-xl font-semibold text-white">AI Analysis Summary</h2>
         <p className="whitespace-pre-wrap text-slate-100">{project.aiSummary || 'No summary available'}</p>
-        <p className="mt-3 text-xs text-cyan-100/80">Verify all requirements directly with your local permitting authority. This is informational only.</p>
+        <div className="mt-4 rounded-md border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-900">
+          <strong>Important Disclaimer:</strong> This analysis is AI-generated for informational purposes only and does not constitute legal or professional advice. Permit requirements change frequently. Always verify requirements directly with your local permitting authority before submitting applications. Permit Pilot is not responsible for errors, omissions, or outdated information.
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -60,6 +67,18 @@ export default function ProjectDetail() {
             {item.pt?.feeBase && <p className="text-sm text-slate-300"><strong>Fee:</strong> ${item.pt.feeBase} base{item.pt.feePerSqft ? ` + $${item.pt.feePerSqft}/sqft` : ''}</p>}
             {item.pt?.lastVerified && (
               <p className="mt-2 text-xs text-slate-400">Last verified: {new Date(item.pt.lastVerified).toLocaleDateString()}</p>
+            )}
+            {jurisdiction?.portalUrl && (
+              <p className="mt-2 text-sm">
+                <a
+                  href={jurisdiction.portalUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-cyan-300 underline-offset-2 hover:underline"
+                >
+                  Official jurisdiction portal
+                </a>
+              </p>
             )}
           </div>
         )) : <p className="text-slate-300">No permits identified yet.</p>}

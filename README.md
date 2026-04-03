@@ -15,7 +15,7 @@ Know every permit before you break ground.
 Run without Docker for faster iteration:
 1. Start Postgres and Redis: `docker-compose up postgres redis`
 2. Install deps: `npm install`
-3. Run migrations: `npm run db:push`
+3. Run migrations: `npm run db:migrate`
 4. Seed data: `npm run db:seed`
 5. Start dev server: `npm run dev` (Vite + frontend) and `npm run server` (backend API)
 

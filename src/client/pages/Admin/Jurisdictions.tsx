@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
 import { get, post, patch, del } from '../../lib/api';
+import AdminLayout from './Layout';
 
 export default function AdminJurisdictions() {
   const queryClient = useQueryClient();
@@ -10,24 +10,26 @@ export default function AdminJurisdictions() {
   const updateMutation = useMutation({ mutationFn: ({ id, data }: { id: string; data: any }) => patch(`/api/admin/jurisdictions/${id}`, data), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'jurisdictions'] }) });
   const deleteMutation = useMutation({ mutationFn: (id: string) => del(`/api/admin/jurisdictions/${id}`), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'jurisdictions'] }) });
 
-  if (isLoading) return <div className="p-8">Loading...</div>;
-
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Jurisdiction Management</h1>
-      <div className="grid gap-4">
-        {jurisdictions?.map((j: any) => (
-          <div key={j.id} className="border p-4 rounded">
-            <h3 className="font-semibold">{j.name}</h3>
-            <p className="text-sm text-gray-600">{j.city}, {j.state} | Portal: <a href={j.portalUrl} target="_blank" rel="noreferrer" className="text-blue-600">{j.portalUrl}</a></p>
-            <div className="flex gap-2 mt-2">
-              <button onClick={() => updateMutation.mutate({ id: j.id, data: { avgReviewDays: j.avgReviewDays + 1 } })} className="px-2 py-1 bg-yellow-100 border rounded">+1 Review Day</button>
-              <button onClick={() => deleteMutation.mutate(j.id)} className="px-2 py-1 bg-red-100 border rounded">Delete</button>
-            </div>
+    <AdminLayout>
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold text-white">Jurisdiction Management</h1>
+        {isLoading ? <div className="text-slate-300">Loading...</div> : (
+          <div className="grid gap-3">
+            {jurisdictions?.map((j: any) => (
+              <div key={j.id} className="rounded-xl border border-white/10 bg-white/5 p-4">
+                <h3 className="font-semibold text-white">{j.name}</h3>
+                <p className="text-sm text-slate-300">{j.city}, {j.state} • <a href={j.portalUrl} target="_blank" rel="noreferrer" className="text-cyan-300 hover:underline">Portal</a></p>
+                <div className="mt-3 flex gap-2">
+                  <button onClick={() => updateMutation.mutate({ id: j.id, data: { avgReviewDays: (j.avgReviewDays || 0) + 1 } })} className="rounded-lg bg-amber-500/20 px-3 py-1 text-amber-100">+1 Review Day</button>
+                  <button onClick={() => deleteMutation.mutate(j.id)} className="rounded-lg bg-rose-500/20 px-3 py-1 text-rose-100">Delete</button>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
+        <button onClick={() => createMutation.mutate({ name: 'New Jurisdiction', state: 'TX', city: 'City', portalUrl: 'https://', submissionMethod: 'online', avgReviewDays: 7 })} className="rounded-lg bg-emerald-500 px-4 py-2 font-medium text-slate-950 hover:bg-emerald-400">Add Jurisdiction</button>
       </div>
-      <button onClick={() => createMutation.mutate({ name: 'New Jurisdiction', state: 'TX', city: 'City', portalUrl: 'https://', submissionMethod: 'online', avgReviewDays: 7 })} className="mt-4 px-4 py-2 bg-green-600 text-white rounded">Add Jurisdiction</button>
-    </div>
+    </AdminLayout>
   );
 }

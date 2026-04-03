@@ -1,13 +1,22 @@
 version: "3.9"
 
 services:
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "7842:3000"
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://permitpilot:${DB_PASSWORD}@postgres:5432/permitpilot
@@ -47,8 +56,10 @@ services:
     depends_on:
       - postgres
       - redis
-    restart: "no"
+    restart: unless-stopped
 
 volumes:
+  caddy_data:
+  caddy_config:
   postgres_data:
   redis_data:

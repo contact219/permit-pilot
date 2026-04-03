@@ -1,6 +1,5 @@
 import { Route, Switch } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Auth from './pages/Auth';
@@ -29,39 +28,41 @@ export function App({}: AppProps) {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <a href="/" className="text-xl font-bold text-blue-600">Permit Pilot</a>
-            </div>
-            <div className="flex items-center space-x-4">
-              {user ? (
-                <>
-                  <a href="/dashboard" className="text-gray-700 hover:text-blue-600">Dashboard</a>
-                  {user.role === 'admin' && (
-                    <a href="/admin" className="text-gray-700 hover:text-blue-600">Admin</a>
-                  )}
-                  <button
-                    onClick={async () => {
-                      await fetch('/api/auth/logout', { method: 'POST' });
-                      window.location.href = '/';
-                    }}
-                    className="text-sm text-red-600 hover:text-red-700"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <a href="/auth" className="text-blue-600 hover:text-blue-700 font-medium">Sign In</a>
-              )}
-            </div>
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_10%_20%,rgba(16,185,129,.25),transparent_30%),radial-gradient(circle_at_90%_0%,rgba(99,102,241,.2),transparent_35%),linear-gradient(180deg,#020617,#0f172a)]" />
+
+      <nav className="sticky top-0 z-30 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-indigo-500 text-sm font-bold text-white">PP</span>
+            <a href="/" className="text-lg font-semibold text-white">Permit Pilot</a>
+          </div>
+
+          <div className="flex items-center gap-3 text-sm">
+            {user ? (
+              <>
+                <a href="/dashboard" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Dashboard</a>
+                {user.role === 'admin' && (
+                  <a href="/admin" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Admin</a>
+                )}
+                <button
+                  onClick={async () => {
+                    await fetch('/api/auth/logout', { method: 'POST' });
+                    window.location.href = '/';
+                  }}
+                  className="rounded-md bg-rose-500/10 px-3 py-1.5 text-rose-300 transition hover:bg-rose-500/20"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <a href="/auth" className="rounded-md bg-cyan-500 px-3 py-1.5 font-medium text-slate-950 transition hover:bg-cyan-400">Sign In</a>
+            )}
           </div>
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/dashboard" component={Dashboard} />

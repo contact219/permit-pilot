@@ -4,20 +4,25 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
 });
 
-export async function createCheckoutSession(userId: string, email: string, planTier: 'contractor' | 'homeowner') {
+export async function createCheckoutSession(
+  userId: string,
+  email: string,
+  planTier: 'contractor' | 'homeowner',
+  frontendUrl: string
+) {
   const priceId = planTier === 'contractor' ? process.env.STRIPE_PRICE_CONTRACTOR : process.env.STRIPE_PRICE_HOMEOWNER;
   return stripe.checkout.sessions.create({
     customer_email: email,
     line_items: [{ price: priceId, quantity: 1 }],
     mode: 'subscription',
-    success_url: `${process.env.FRONTEND_URL}/dashboard?success=true`,
-    cancel_url: `${process.env.FRONTEND_URL}/pricing?canceled=true`,
+    success_url: `${frontendUrl}/dashboard?success=true`,
+    cancel_url: `${frontendUrl}/dashboard?canceled=true`,
     metadata: { userId },
   });
 }
 
-export async function createCustomerPortalSession(customerId: string) {
-  return stripe.billingPortal.sessions.create({ customer: customerId, return_url: `${process.env.FRONTEND_URL}/dashboard` });
+export async function createCustomerPortalSession(customerId: string, frontendUrl: string) {
+  return stripe.billingPortal.sessions.create({ customer: customerId, return_url: `${frontendUrl}/dashboard` });
 }
 
 export async function handleWebhook(rawBody: Buffer, signature: string): Promise<any> {

@@ -75,6 +75,12 @@ export default function ProjectDetail() {
               className="px-4 py-2 rounded-lg bg-cyan-500 text-slate-950 font-medium hover:bg-cyan-400 disabled:opacity-50">
               {reanalyzeMutation.isPending ? 'Analyzing...' : 'Re-run Analysis'}
             </button>
+            <button onClick={async () => {
+              const res = await fetch(`/api/projects/${id}/share`, { method: 'POST', credentials: 'include' });
+              const data = await res.json();
+              navigator.clipboard.writeText(data.shareUrl);
+              alert('Share link copied to clipboard!');
+            }} className="px-4 py-2 rounded-lg bg-indigo-500/80 text-white hover:bg-indigo-500">🔗 Share</button>
             <button onClick={() => deleteMutation.mutate()} className="px-4 py-2 rounded-lg bg-rose-500/80 text-white hover:bg-rose-500">Delete</button>
           </div>
         </div>
@@ -87,6 +93,61 @@ export default function ProjectDetail() {
           <strong>Disclaimer:</strong> AI-generated for informational purposes only. Always verify directly with your local permitting authority before submitting applications.
         </div>
       </div>
+
+      {/* Bid Estimate */}
+      {(project.bidEstimate as any)?.totalFees && (
+        <div className="rounded-2xl border border-emerald-300/20 bg-emerald-400/10 p-6">
+          <h2 className="text-xl font-semibold text-white mb-3">💰 Permit Fee Estimate</h2>
+          <p className="text-3xl font-bold text-emerald-300 mb-4">${(project.bidEstimate as any).totalFees?.toLocaleString()}</p>
+          <div className="space-y-2">
+            {(project.bidEstimate as any).breakdown?.map((item: any, i: number) => (
+              <div key={i} className="flex justify-between text-sm">
+                <span className="text-slate-300">{item.permit}</span>
+                <span className="text-white font-medium">${item.fee?.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-slate-400">Estimate only — verify fees with the jurisdiction before bidding.</p>
+        </div>
+      )}
+
+      {/* Timeline Prediction */}
+      {project.timelinePrediction && (
+        <div className="rounded-2xl border border-indigo-300/20 bg-indigo-400/10 p-6">
+          <h2 className="text-xl font-semibold text-white mb-3">📅 Timeline Prediction</h2>
+          <p className="text-slate-200 whitespace-pre-wrap text-sm">{project.timelinePrediction as string}</p>
+        </div>
+      )}
+
+      {/* Conflict Analysis */}
+      {(project.conflictAnalysis as any)?.hasConflicts && (
+        <div className="rounded-2xl border border-rose-300/20 bg-rose-400/10 p-6">
+          <h2 className="text-xl font-semibold text-white mb-3">⚠️ Permit Conflicts Detected</h2>
+          <div className="space-y-3">
+            {(project.conflictAnalysis as any).conflicts?.map((c: any, i: number) => (
+              <div key={i} className="rounded-xl bg-white/5 p-4">
+                <p className="text-sm font-medium text-rose-200 mb-1">{c.issue}</p>
+                <p className="text-xs text-slate-300"><strong>Permits:</strong> {c.permits?.join(', ')}</p>
+                <p className="text-xs text-emerald-300 mt-1"><strong>Resolution:</strong> {c.resolution}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Red Flags */}
+      {Array.isArray(project.redFlags) && (project.redFlags as string[]).length > 0 && (
+        <div className="rounded-2xl border border-amber-300/20 bg-amber-400/10 p-6">
+          <h2 className="text-xl font-semibold text-white mb-3">🚩 Red Flags</h2>
+          <ul className="space-y-2">
+            {(project.redFlags as string[]).map((flag: string, i: number) => (
+              <li key={i} className="flex gap-2 text-sm text-amber-100">
+                <span className="shrink-0">•</span> {flag}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">

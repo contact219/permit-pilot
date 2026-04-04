@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { db } from '../db.js';
-import { projects, projectPermits, jurisdictions, permitTypes } from '../../../db/schema.js';
+import { projects, projectPermits, jurisdictions, permitTypes, inspectionReminders } from '../../../db/schema.js';
 import { eq, and, desc, sql } from 'drizzle-orm';
-import { analyzeProject } from '../services/claude.js';
+import { analyzeProject, parseNaturalLanguageProject, generateApplicationPacket } from '../services/claude.js';
 import { checkRateLimit } from '../services/rate-limit.js';
 
 const router = Router();
@@ -77,7 +77,13 @@ router.post('/:id/analyze', requireAuth, async (req: any, res: any) => {
     const [jurisdiction] = await db.select().from(jurisdictions).where(eq(jurisdictions.id, project.jurisdictionId!));
     console.log('JURISDICTION:', jurisdiction ? jurisdiction.name : 'NOT FOUND');
     const analysis = await analyzeProject({ description: project.description as string, projectType: project.projectType as string, squareFootage: project.squareFootage as number | undefined, address: project.address as string, jurisdiction: jurisdiction.name, estimatedValue: project.estimatedValue as unknown as number | undefined, isCommercial: (project.projectType as string | null)?.includes('commercial') || false, existingStructure: true }, jurisdiction as any);
-    await db.update(projects).set({ aiSummary: analysis.plainEnglishSummary }).where(eq(projects.id, req.params.id));
+    await db.update(projects).set({
+      aiSummary: analysis.plainEnglishSummary,
+      bidEstimate: analysis.bidEstimate || null,
+      conflictAnalysis: analysis.conflictAnalysis || null,
+      redFlags: analysis.redFlags || [],
+      timelinePrediction: analysis.timelinePrediction || null,
+    }).where(eq(projects.id, req.params.id));
     await db.delete(projectPermits).where(eq(projectPermits.projectId, req.params.id));
     console.log('Claude returned permits:', JSON.stringify(analysis.requiredPermits));
     for (const permit of analysis.requiredPermits) {
@@ -115,6 +121,65 @@ router.patch('/:id/permits/:permitId', requireAuth, async (req: any, res: any) =
 
     res.json(updated);
   } catch (e) { console.error(e); res.status(500).json({ error: 'Update failed' }); }
+});
+
+
+// ── Natural Language Parse ────────────────────────────────────────────────────
+router.post('/parse', requireAuth, async (req: any, res: any) => {
+  try {
+    const { input, jurisdictionId } = req.body;
+    if (!input) return res.status(400).json({ error: 'Input required' });
+    const [jurisdiction] = await db.select().from(jurisdictions).where(eq(jurisdictions.id, jurisdictionId || ''));
+    const jurisdictionName = jurisdiction?.name || 'DFW, TX';
+    const parsed = await parseNaturalLanguageProject(input, jurisdictionName);
+    res.json(parsed);
+  } catch (e) { console.error('Parse error:', e); res.status(500).json({ error: 'Failed to parse project description' }); }
+});
+
+// ── Share Token ───────────────────────────────────────────────────────────────
+router.post('/:id/share', requireAuth, async (req: any, res: any) => {
+  try {
+    const [project] = await db.select().from(projects).where(and(eq(projects.id, req.params.id), eq(projects.userId, req.user.id)));
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    const crypto = await import('crypto');
+    const token = crypto.randomBytes(16).toString('hex');
+    await db.update(projects).set({ shareToken: token }).where(eq(projects.id, req.params.id));
+    res.json({ shareToken: token, shareUrl: `${process.env.FRONTEND_URL || ''}/share/${token}` });
+  } catch (e) { res.status(500).json({ error: 'Failed to generate share link' }); }
+});
+
+// ── Application Packet ────────────────────────────────────────────────────────
+router.post('/:id/packet', requireAuth, async (req: any, res: any) => {
+  try {
+    const [project] = await db.select().from(projects).where(and(eq(projects.id, req.params.id), eq(projects.userId, req.user.id)));
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    const [jurisdiction] = await db.select().from(jurisdictions).where(eq(jurisdictions.id, project.jurisdictionId!));
+    const permits = await db.select({ pp: projectPermits, pt: permitTypes }).from(projectPermits)
+      .leftJoin(permitTypes, eq(projectPermits.permitTypeId, permitTypes.id))
+      .where(eq(projectPermits.projectId, req.params.id));
+    const packet = await generateApplicationPacket(project, permits, jurisdiction);
+    res.json(packet);
+  } catch (e) { console.error('Packet error:', e); res.status(500).json({ error: 'Failed to generate packet' }); }
+});
+
+// ── Set Inspection Reminder ───────────────────────────────────────────────────
+router.post('/:id/permits/:permitId/reminder', requireAuth, async (req: any, res: any) => {
+  try {
+    const { remindAt, reminderType } = req.body;
+    if (!remindAt) return res.status(400).json({ error: 'remindAt required' });
+    const [project] = await db.select().from(projects).where(and(eq(projects.id, req.params.id), eq(projects.userId, req.user.id)));
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    const [reminder] = await db.insert(inspectionReminders).values({
+      projectId: req.params.id,
+      projectPermitId: req.params.permitId,
+      userId: req.user.id,
+      reminderType: reminderType || 'follow_up',
+      remindAt: new Date(remindAt),
+      email: req.user.email,
+    }).returning();
+    await db.update(projectPermits).set({ inspectionReminderAt: new Date(remindAt) }).where(eq(projectPermits.id, req.params.permitId));
+    res.json(reminder);
+  } catch (e) { res.status(500).json({ error: 'Failed to set reminder' }); }
 });
 
 

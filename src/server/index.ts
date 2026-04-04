@@ -47,6 +47,23 @@ app.use('/api/projects', routes.projectsRouter);
 app.use('/api/export', routes.exportRouter);
 app.use('/api/jurisdictions', routes.jurisdictionsRouter);
 app.use('/api/billing', routes.billingRouter);
+
+// Public share route
+app.get('/api/share/:token', async (req: any, res: any) => {
+  try {
+    const { db } = await import('./db.js');
+    const { projects, jurisdictions, projectPermits, permitTypes } = await import('../../db/schema.js');
+    const { eq } = await import('drizzle-orm');
+    const [project] = await db.select().from(projects).where(eq(projects.shareToken, req.params.token));
+    if (!project) return res.status(404).json({ error: 'Not found' });
+    const [jurisdiction] = await db.select().from(jurisdictions).where(eq(jurisdictions.id, project.jurisdictionId!));
+    const permits = await db.select({ pp: projectPermits, pt: permitTypes })
+      .from(projectPermits).leftJoin(permitTypes, eq(projectPermits.permitTypeId, permitTypes.id))
+      .where(eq(projectPermits.projectId, project.id));
+    // Return safe subset — no userId etc
+    res.json({ project: { id: project.id, name: project.name, address: project.address, aiSummary: project.aiSummary, status: project.status }, jurisdiction, permits });
+  } catch (e) { res.status(500).json({ error: 'Failed to load shared project' }); }
+});
 app.use('/api/admin/jurisdictions', routes.adminJurisdictionsRouter);
 app.use('/api/admin/users', routes.adminUsersRouter);
 app.use('/api/admin/scraper', routes.adminScraperRouter);

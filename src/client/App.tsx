@@ -14,6 +14,7 @@ import AdminUsers from './pages/Admin/Users';
 import AdminScraperLogs from './pages/Admin/ScraperLogs';
 import AdminScraperRun from './pages/Admin/ScraperRun';
 import About from './pages/About';
+import SharedProject from './pages/SharedProject';
 
 interface AppProps {}
 
@@ -84,6 +85,7 @@ export function App({}: AppProps) {
           <Route path="/admin/scraper/logs" component={AdminScraperLogs} />
           <Route path="/admin/scraper/run" component={AdminScraperRun} />
           <Route path="/about" component={About} />
+          <Route path="/share/:token" component={SharedProject} />
           <Route path="/verify-email" component={VerifyEmail} />
           <Route path="/forgot-password" component={ForgotPassword} />
           <Route path="/reset-password" component={ResetPassword} />

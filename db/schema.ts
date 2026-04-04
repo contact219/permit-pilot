@@ -60,6 +60,12 @@ export const projects = pgTable("projects", {
   intakeData: jsonb("intake_data"),            // Raw form answers
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  shareToken: text("share_token"),
+  naturalLanguageInput: text("natural_language_input"),
+  bidEstimate: jsonb("bid_estimate"),
+  conflictAnalysis: jsonb("conflict_analysis"),
+  redFlags: jsonb("red_flags"),
+  timelinePrediction: text("timeline_prediction"),
 });
 
 export const projectPermits = pgTable("project_permits", {
@@ -71,7 +77,23 @@ export const projectPermits = pgTable("project_permits", {
   submittedAt: timestamp("submitted_at"),
   approvedAt: timestamp("approved_at"),
   notes: text("notes"),
-  preFillData: jsonb("pre_fill_data"),   // Extracted form field values
+  preFillData: jsonb("pre_fill_data"),
+  inspectionReminderAt: timestamp("inspection_reminder_at"),
+  reminderSent: boolean("reminder_sent").default(false),
+  appliedAt: timestamp("applied_at"),
+});
+
+export const inspectionReminders = pgTable("inspection_reminders", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id").references(() => projects.id),
+  projectPermitId: uuid("project_permit_id").references(() => projectPermits.id),
+  userId: uuid("user_id").references(() => users.id),
+  reminderType: text("reminder_type"),
+  remindAt: timestamp("remind_at").notNull(),
+  sentAt: timestamp("sent_at"),
+  email: text("email"),
+  message: text("message"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const scraperJobs = pgTable("scraper_jobs", {

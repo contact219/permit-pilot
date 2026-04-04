@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db.js';
-import { projects, projectPermits, permitTypes } from '../../../db/schema.js';
+import { projects, projectPermits, permitTypes, jurisdictions } from '../../../db/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { generateChecklist, prefillPermitForm, generateDataSheet } from '../services/pdf.js';
 import { createFormZip } from '../services/zip.js';
@@ -13,7 +13,9 @@ router.get('/:id/checklist', requireAuth, async (req: any, res: any) => {
     const [project] = await db.select().from(projects).where(and(eq(projects.id, req.params.id), eq(projects.userId, req.user.id)));
     if (!project) return res.status(404).json({ error: 'Project not found' });
     const permits = await db.select({ pp: projectPermits, pt: permitTypes }).from(projectPermits).leftJoin(permitTypes, eq(projectPermits.permitTypeId, permitTypes.id)).where(eq(projectPermits.projectId, req.params.id));
-    const raw = await generateChecklist(project, permits);
+    const [jurisdiction] = project.jurisdictionId ? await db.select().from(jurisdictions).where(eq(jurisdictions.id, project.jurisdictionId)) : [null];
+    const projectWithJurisdiction = { ...project, jurisdictionName: (jurisdiction as any)?.name || 'Unknown', jurisdiction };
+    const raw = await generateChecklist(projectWithJurisdiction, permits);
     const buf = Buffer.isBuffer(raw) ? raw : Buffer.from(raw);
     res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${(project as any).name}-checklist.pdf"`, 'Content-Length': buf.length });
     res.send(buf);

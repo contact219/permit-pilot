@@ -125,7 +125,7 @@ router.patch('/:id/permits/:permitId', requireAuth, async (req: any, res: any) =
 
 
 // ── Natural Language Parse ────────────────────────────────────────────────────
-router.post('/parse', requireAuth, async (req: any, res: any) => {
+router.post('/parse', async (req: any, res: any) => {
   try {
     const { input, jurisdictionId } = req.body;
     if (!input) return res.status(400).json({ error: 'Input required' });

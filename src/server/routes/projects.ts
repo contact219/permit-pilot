@@ -22,7 +22,7 @@ router.post('/', requireAuth, async (req: any, res: any) => {
     const limit = await checkPlanLimit(userId, req.user.planTier || 'free');
     if (!limit.allowed) return res.status(403).json({ error: 'Project limit exceeded', message: limit.message });
 
-    const rate = await checkRateLimit(userId);
+    const rate = await checkRateLimit(userId, req.user.planTier || 'free');
     if (!rate.allowed) return res.status(429).json({ error: 'Rate limit exceeded', resetAt: new Date(rate.resetAt).toISOString() });
 
     const { name, description, projectType, jurisdictionId, squareFootage, estimatedValue, address } = req.body;
@@ -68,7 +68,7 @@ router.get('/:id', requireAuth, async (req: any, res: any) => {
 router.post('/:id/analyze', requireAuth, async (req: any, res: any) => {
   try {
     console.log('ANALYZE START for project:', req.params.id);
-    const rate = await checkRateLimit(req.user.id);
+    const rate = await checkRateLimit(req.user.id, req.user.planTier || 'free');
     console.log('RATE LIMIT:', JSON.stringify(rate));
     if (!rate.allowed) return res.status(429).json({ error: 'Rate limit exceeded', resetAt: new Date(rate.resetAt).toISOString() });
     const [project] = await db.select().from(projects).where(and(eq(projects.id, req.params.id), eq(projects.userId, req.user.id)));

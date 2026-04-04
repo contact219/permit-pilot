@@ -6,6 +6,9 @@ import Auth from './pages/Auth';
 import NewProject from './pages/NewProject';
 import ProjectDetail from './pages/ProjectDetail';
 import Admin from './pages/Admin/Admin';
+import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import AdminJurisdictions from './pages/Admin/Jurisdictions';
 import AdminUsers from './pages/Admin/Users';
 import AdminScraperLogs from './pages/Admin/ScraperLogs';
@@ -74,6 +77,9 @@ export function App({}: AppProps) {
           <Route path="/admin/users" component={AdminUsers} />
           <Route path="/admin/scraper/logs" component={AdminScraperLogs} />
           <Route path="/admin/scraper/run" component={AdminScraperRun} />
+          <Route path="/verify-email" component={VerifyEmail} />
+          <Route path="/forgot-password" component={ForgotPassword} />
+          <Route path="/reset-password" component={ResetPassword} />
         </Switch>
       </main>
     </div>

@@ -8,6 +8,11 @@ export const users = pgTable("users", {
   companyName: text("company_name"),
   planTier: text("plan_tier").default("free"), // free | contractor | homeowner
   stripeCustomerId: text("stripe_customer_id"),
+  emailVerified: boolean("email_verified").default(false),
+  verificationToken: text("verification_token"),
+  verificationExpiry: timestamp("verification_expiry"),
+  resetToken: text("reset_token"),
+  resetExpiry: timestamp("reset_expiry"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

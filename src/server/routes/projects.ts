@@ -96,6 +96,28 @@ router.post('/:id/analyze', requireAuth, async (req: any, res: any) => {
   } catch (e) { console.error('Analysis error:', e); res.status(500).json({ error: 'Analysis failed' }); }
 });
 
+router.patch('/:id/permits/:permitId', requireAuth, async (req: any, res: any) => {
+  try {
+    const { status, notes } = req.body;
+    const update: any = {};
+    if (status !== undefined) update.status = status;
+    if (notes !== undefined) update.notes = notes;
+    if (Object.keys(update).length === 0) return res.status(400).json({ error: 'Nothing to update' });
+
+    // Verify project belongs to user
+    const [project] = await db.select().from(projects).where(and(eq(projects.id, req.params.id), eq(projects.userId, req.user.id)));
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+
+    const [updated] = await db.update(projectPermits)
+      .set(update)
+      .where(eq(projectPermits.id, req.params.permitId))
+      .returning();
+
+    res.json(updated);
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Update failed' }); }
+});
+
+
 router.delete('/:id', requireAuth, async (req: any, res: any) => {
   try {
     const deleted = await db.delete(projects).where(and(eq(projects.id, req.params.id), eq(projects.userId, req.user.id))).returning({ id: projects.id });

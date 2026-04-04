@@ -59,7 +59,10 @@ export function App({}: AppProps) {
                 </button>
               </>
             ) : (
-              <a href="/auth" className="rounded-md bg-cyan-500 px-3 py-1.5 font-medium text-slate-950 transition hover:bg-cyan-400">Sign In</a>
+              <>
+                <a href="/#pricing" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Pricing</a>
+                <a href="/auth" className="rounded-md bg-cyan-500 px-3 py-1.5 font-medium text-slate-950 transition hover:bg-cyan-400">Sign In</a>
+              </>
             )}
           </div>
         </div>

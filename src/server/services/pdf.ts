@@ -90,9 +90,15 @@ export async function generateChecklist(project: any, permits: any[]): Promise<B
       .font('Helvetica')
       .fontSize(11)
       .text(project.address)
-      .text(`Jurisdiction: ${project.jurisdictionName || 'Unknown'}`)
+      .text(`Jurisdiction: ${project.jurisdictionName || project.jurisdiction?.name || 'Unknown'}`)
       .text(`Generated: ${new Date().toLocaleDateString()}`)
-      .moveDown(1.5);
+      .moveDown(0.5);
+
+    if (project.jurisdiction?.portalUrl) {
+      doc.fillColor('#0066cc').text(`Permit Portal: ${project.jurisdiction.portalUrl}`, { link: project.jurisdiction.portalUrl, underline: true }).fillColor('#000');
+    }
+
+    doc.moveDown(1.5);
 
     doc
       .fontSize(12)
@@ -129,8 +135,17 @@ export async function generateChecklist(project: any, permits: any[]): Promise<B
         doc
           .fontSize(10)
           .fillColor('#333')
-          .text(`      Fee: $${permit.feeBase} base${permit.feePerSqft ? ` + $${permit.feePerSqft}/sqft` : ''}`, { indent: 20 })
+          .text(`      💰 Fee: $${permit.feeBase} base${permit.feePerSqft ? ` + $${permit.feePerSqft}/sqft` : ''}`, { indent: 20 })
           .fillColor('#000');
+      }
+
+      if (item.pp?.notes) {
+        doc.fontSize(10).fillColor('#555').text(`      📝 Notes: ${item.pp.notes}`, { indent: 20 }).fillColor('#000');
+      }
+
+      if (item.pp?.status && item.pp.status !== 'not_started') {
+        const statusLabels: Record<string, string> = { applied: 'Applied', in_review: 'In Review', approved: 'Approved ✓' };
+        doc.fontSize(10).fillColor('#005500').text(`      Status: ${statusLabels[item.pp.status] || item.pp.status}`, { indent: 20 }).fillColor('#000');
       }
 
       doc.moveDown(1);

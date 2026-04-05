@@ -75,6 +75,10 @@ export default function Dashboard() {
             <button onClick={async () => { const { url } = await get<{ url: string }>('/api/billing/portal'); window.location.href = url; }} className="px-4 py-2 rounded-lg bg-slate-700 text-white text-sm hover:bg-slate-600">Manage Subscription</button>
           )}
           <button onClick={() => navigate('/projects/new')} className="px-4 py-2 rounded-lg bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-400">+ New Project</button>
+          <a href="https://quantumsurety.bond" target="_blank" rel="noreferrer"
+            className="px-4 py-2 rounded-lg bg-amber-500/20 text-amber-200 text-sm font-medium hover:bg-amber-500/30 border border-amber-400/20">
+            🔒 Get Contractor Bond
+          </a>
         </div>
       </div>
 

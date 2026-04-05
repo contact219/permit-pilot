@@ -5,6 +5,8 @@ import { get, post, del } from '../lib/api';
 import StatusBadge from '../components/StatusBadge';
 import ChecklistExport from '../components/ChecklistExport';
 import FormZipExport from '../components/FormZipExport';
+import BondUpsell from '../components/BondUpsell';
+import PermitStatusLookup from '../components/PermitStatusLookup';
 
 const PERMIT_STATUSES = ['not_started', 'applied', 'in_review', 'approved'] as const;
 type PermitStatus = typeof PERMIT_STATUSES[number];
@@ -36,6 +38,7 @@ export default function ProjectDetail() {
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [noteText, setNoteText] = useState('');
 
+  const { data: userData } = useQuery({ queryKey: ['user'], queryFn: () => fetch('/api/auth/me', { credentials: 'include' }).then(r => r.json()) });
   const { data, isLoading, error } = useQuery({ queryKey: ['project', id], queryFn: () => get<any>(`/api/projects/${id}`), enabled: !!id });
   const reanalyzeMutation = useMutation({ mutationFn: () => post<any>(`/api/projects/${id}/analyze`, {}), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project', id] }) });
   const deleteMutation = useMutation({ mutationFn: () => del(`/api/projects/${id}`), onSuccess: () => navigate('/dashboard') });
@@ -149,6 +152,8 @@ export default function ProjectDetail() {
         </div>
       )}
 
+      <BondUpsell project={project} user={userData?.user} jurisdiction={jurisdiction} permits={permits || []} />
+
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-2xl font-bold text-white">Required Permits</h2>
@@ -231,6 +236,14 @@ export default function ProjectDetail() {
           </div>
         )}
       </div>
+      {['Dallas, TX', 'Fort Worth, TX', 'Arlington, TX'].includes(jurisdiction?.name) && (
+        <PermitStatusLookup
+          projectId={project.id}
+          jurisdictionName={jurisdiction?.name || ''}
+          projectAddress={project.address}
+        />
+      )}
+
     </div>
   );
 }

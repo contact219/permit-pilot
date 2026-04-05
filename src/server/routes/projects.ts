@@ -3,6 +3,7 @@ import { db } from '../db.js';
 import { projects, projectPermits, jurisdictions, permitTypes, inspectionReminders } from '../../../db/schema.js';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { sendAnalysisCompleteEmail } from '../services/email.js';
+import { lookupPermitByNumber, lookupPermitsByAddress, getCityPermitStats } from '../services/permit-status.js';
 import { analyzeProject, parseNaturalLanguageProject, generateApplicationPacket } from '../services/claude.js';
 import { checkRateLimit } from '../services/rate-limit.js';
 
@@ -182,6 +183,32 @@ router.post('/:id/permits/:permitId/reminder', requireAuth, async (req: any, res
     await db.update(projectPermits).set({ inspectionReminderAt: new Date(remindAt) }).where(eq(projectPermits.id, req.params.permitId));
     res.json(reminder);
   } catch (e) { res.status(500).json({ error: 'Failed to set reminder' }); }
+});
+
+
+// ── Permit Status Lookup ──────────────────────────────────────────────────────
+router.get('/:id/permit-status', requireAuth, async (req: any, res: any) => {
+  try {
+    const [project] = await db.select().from(projects).where(and(eq(projects.id, req.params.id), eq(projects.userId, req.user.id)));
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    const [jurisdiction] = await db.select().from(jurisdictions).where(eq(jurisdictions.id, project.jurisdictionId!));
+    if (!jurisdiction) return res.json({ results: [], supported: false });
+
+    const { permitNumber } = req.query;
+    let results: any[] = [];
+
+    if (permitNumber && typeof permitNumber === 'string') {
+      const result = await lookupPermitByNumber(permitNumber, jurisdiction.name);
+      results = result.found ? [result] : [];
+    } else if (project.address) {
+      results = await lookupPermitsByAddress(project.address as string, jurisdiction.name);
+    } else {
+      results = [];
+    }
+
+    const stats = await getCityPermitStats(jurisdiction.name);
+    res.json({ results, stats, jurisdiction: jurisdiction.name, supported: true });
+  } catch (e: any) { console.error('Permit status error:', e); res.status(500).json({ error: 'Lookup failed' }); }
 });
 
 

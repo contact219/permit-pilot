@@ -106,3 +106,20 @@ export const scraperJobs = pgTable("scraper_jobs", {
   error: text("error"),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+export const permitRunners = pgTable("permit_runners", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  company: text("company"),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  website: text("website"),
+  jurisdictions: text("jurisdictions").array(),
+  specialties: text("specialties").array(),
+  ratePerPermit: decimal("rate_per_permit"),
+  rateType: text("rate_type").default("flat"),
+  bio: text("bio"),
+  verified: boolean("verified").default(false),
+  active: boolean("active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});

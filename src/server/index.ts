@@ -48,6 +48,12 @@ app.use('/api/export', routes.exportRouter);
 app.use('/api/jurisdictions', routes.jurisdictionsRouter);
 app.use('/api/billing', routes.billingRouter);
 
+// Permit runners marketplace
+import permitRunnersRouter from './routes/permit-runners.js';
+import apiV1Router from './routes/api-v1.js';
+app.use('/api/permit-runners', permitRunnersRouter);
+app.use('/api/v1', apiV1Router);
+
 // Public share route
 app.get('/api/share/:token', async (req: any, res: any) => {
   try {

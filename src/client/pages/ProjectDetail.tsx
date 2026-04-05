@@ -7,6 +7,8 @@ import ChecklistExport from '../components/ChecklistExport';
 import FormZipExport from '../components/FormZipExport';
 import BondUpsell from '../components/BondUpsell';
 import PermitStatusLookup from '../components/PermitStatusLookup';
+import HOALookup from '../components/HOALookup';
+import PermitRunnerMarketplace from '../components/PermitRunnerMarketplace';
 
 const PERMIT_STATUSES = ['not_started', 'applied', 'in_review', 'approved'] as const;
 type PermitStatus = typeof PERMIT_STATUSES[number];
@@ -236,6 +238,16 @@ export default function ProjectDetail() {
           </div>
         )}
       </div>
+      <HOALookup projectId={project.id} projectAddress={project.address} />
+
+      <PermitRunnerMarketplace
+        jurisdictionName={jurisdiction?.name || ''}
+        projectId={project.id}
+        projectAddress={project.address}
+        userName={userData?.user?.companyName}
+        userEmail={userData?.user?.email}
+      />
+
       {['Dallas, TX', 'Fort Worth, TX', 'Arlington, TX'].includes(jurisdiction?.name) && (
         <PermitStatusLookup
           projectId={project.id}

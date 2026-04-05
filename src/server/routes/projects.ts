@@ -3,6 +3,7 @@ import { db } from '../db.js';
 import { projects, projectPermits, jurisdictions, permitTypes, inspectionReminders } from '../../../db/schema.js';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { sendAnalysisCompleteEmail } from '../services/email.js';
+import { lookupHOA } from '../services/hoa-lookup.js';
 import { lookupPermitByNumber, lookupPermitsByAddress, getCityPermitStats } from '../services/permit-status.js';
 import { analyzeProject, parseNaturalLanguageProject, generateApplicationPacket } from '../services/claude.js';
 import { checkRateLimit } from '../services/rate-limit.js';
@@ -209,6 +210,18 @@ router.get('/:id/permit-status', requireAuth, async (req: any, res: any) => {
     const stats = await getCityPermitStats(jurisdiction.name);
     res.json({ results, stats, jurisdiction: jurisdiction.name, supported: true });
   } catch (e: any) { console.error('Permit status error:', e); res.status(500).json({ error: 'Lookup failed' }); }
+});
+
+
+// ── HOA Lookup ────────────────────────────────────────────────────────────────
+router.get('/:id/hoa', requireAuth, async (req: any, res: any) => {
+  try {
+    const [project] = await db.select().from(projects).where(and(eq(projects.id, req.params.id), eq(projects.userId, req.user.id)));
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    const [jurisdiction] = await db.select().from(jurisdictions).where(eq(jurisdictions.id, project.jurisdictionId!));
+    const result = await lookupHOA(project.address as string || '', jurisdiction?.name || '');
+    res.json(result);
+  } catch (e) { console.error('HOA lookup error:', e); res.status(500).json({ error: 'HOA lookup failed' }); }
 });
 
 

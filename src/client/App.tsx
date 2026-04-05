@@ -17,6 +17,10 @@ import About from './pages/About';
 import Features from './pages/Features';
 import ApiDocs from './pages/ApiDocs';
 import FortWorthPermits2026 from './pages/blog/FortWorthPermits2026';
+import DFWPermitTimeline2026 from './pages/blog/DFWPermitTimeline2026';
+import TexasPoolPermits2026 from './pages/blog/TexasPoolPermits2026';
+import ContractorBondDFW2026 from './pages/blog/ContractorBondDFW2026';
+import RoomAdditionCollinCounty2026 from './pages/blog/RoomAdditionCollinCounty2026';
 import Blog from './pages/Blog';
 import InstallPrompt from './components/InstallPrompt';
 import SharedProject from './pages/SharedProject';
@@ -98,6 +102,10 @@ export function App({}: AppProps) {
           <Route path="/features" component={Features} />
           <Route path="/api-docs" component={ApiDocs} />
           <Route path="/blog/fort-worth-building-permit-requirements-2026" component={FortWorthPermits2026} />
+          <Route path="/blog/how-long-does-a-building-permit-take-dfw-2026" component={DFWPermitTimeline2026} />
+          <Route path="/blog/pool-permit-requirements-texas-dfw-2026" component={TexasPoolPermits2026} />
+          <Route path="/blog/dfw-contractor-license-bond-requirements-2026" component={ContractorBondDFW2026} />
+          <Route path="/blog/room-addition-permit-requirements-frisco-mckinney-allen-plano-2026" component={RoomAdditionCollinCounty2026} />
           <Route path="/blog" component={Blog} />
           <Route path="/share/:token" component={SharedProject} />
           <Route path="/verify-email" component={VerifyEmail} />

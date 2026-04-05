@@ -16,6 +16,8 @@ import AdminScraperRun from './pages/Admin/ScraperRun';
 import About from './pages/About';
 import Features from './pages/Features';
 import ApiDocs from './pages/ApiDocs';
+import FortWorthPermits2026 from './pages/blog/FortWorthPermits2026';
+import Blog from './pages/Blog';
 import InstallPrompt from './components/InstallPrompt';
 import SharedProject from './pages/SharedProject';
 
@@ -52,6 +54,7 @@ export function App({}: AppProps) {
                 <a href="/dashboard" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Dashboard</a>
                 <a href="/about" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">About</a>
                 <a href="/features" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Features</a>
+                <a href="/blog" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Blog</a>
                 {user.role === 'admin' && (
                   <a href="/admin" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Admin</a>
                 )}
@@ -69,6 +72,7 @@ export function App({}: AppProps) {
               <>
                 <a href="/about" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">About</a>
                 <a href="/features" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Features</a>
+                <a href="/blog" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Blog</a>
                 <a href="/#pricing" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Pricing</a>
                 <a href="/auth" className="rounded-md bg-cyan-500 px-3 py-1.5 font-medium text-slate-950 transition hover:bg-cyan-400">Sign In</a>
               </>
@@ -93,6 +97,8 @@ export function App({}: AppProps) {
           <Route path="/about" component={About} />
           <Route path="/features" component={Features} />
           <Route path="/api-docs" component={ApiDocs} />
+          <Route path="/blog/fort-worth-building-permit-requirements-2026" component={FortWorthPermits2026} />
+          <Route path="/blog" component={Blog} />
           <Route path="/share/:token" component={SharedProject} />
           <Route path="/verify-email" component={VerifyEmail} />
           <Route path="/forgot-password" component={ForgotPassword} />

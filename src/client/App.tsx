@@ -15,6 +15,7 @@ import AdminScraperLogs from './pages/Admin/ScraperLogs';
 import AdminScraperRun from './pages/Admin/ScraperRun';
 import About from './pages/About';
 import Features from './pages/Features';
+import ApiDocs from './pages/ApiDocs';
 import InstallPrompt from './components/InstallPrompt';
 import SharedProject from './pages/SharedProject';
 
@@ -91,6 +92,7 @@ export function App({}: AppProps) {
           <Route path="/admin/scraper/run" component={AdminScraperRun} />
           <Route path="/about" component={About} />
           <Route path="/features" component={Features} />
+          <Route path="/api-docs" component={ApiDocs} />
           <Route path="/share/:token" component={SharedProject} />
           <Route path="/verify-email" component={VerifyEmail} />
           <Route path="/forgot-password" component={ForgotPassword} />

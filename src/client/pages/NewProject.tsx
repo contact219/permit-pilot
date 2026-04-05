@@ -3,6 +3,7 @@ import { useLocation, useSearch } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { get, post } from '../lib/api';
 import JurisdictionSearch from '../components/JurisdictionSearch';
+import AddressAutocomplete from '../components/AddressAutocomplete';
 
 const PROJECT_TYPES = [
   { value: 'room_addition', label: 'Room addition' },
@@ -44,10 +45,22 @@ export default function NewProject() {
   const [inHistoric, setInHistoric] = useState(false);
   const [inFloodZone, setInFloodZone] = useState(false);
   const [projectName, setProjectName] = useState('');
+  const [geocodeResult, setGeocodedResult] = useState<any>(null);
+  const [jurisdictionAutoDetected, setJurisdictionAutoDetected] = useState(false);
 
   const handleJurisdictionSelect = (jur: any) => {
     setJurisdictionId(jur.id);
     setJurisdictionName(jur.name);
+  };
+
+  const handleGeocode = (result: any) => {
+    setGeocodedResult(result);
+    if (result?.found && result?.jurisdiction) {
+      setJurisdictionId(result.jurisdiction.id);
+      setJurisdictionName(result.jurisdiction.name);
+      setJurisdictionAutoDetected(true);
+    }
+    if (result?.inFloodZone) setInFloodZone(true);
   };
 
   const handleParseNL = async () => {
@@ -138,14 +151,28 @@ export default function NewProject() {
             <div>
               <label className="block text-sm font-medium text-slate-200 mb-1">Jurisdiction <span className="text-rose-400">*</span></label>
               <JurisdictionSearch onSelect={handleJurisdictionSelect} selectedId={jurisdictionId} />
-              {jurisdictionName && <p className="text-sm text-cyan-300 mt-1">✓ {jurisdictionName}</p>}
+              {jurisdictionName && (
+                <p className="text-sm text-cyan-300 mt-1">
+                  ✓ {jurisdictionName}
+                  {jurisdictionAutoDetected && <span className="ml-2 text-xs text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full">Auto-detected</span>}
+                </p>
+              )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-200 mb-1">Project Address</label>
-              <input type="text" value={address} onChange={e => setAddress(e.target.value)}
-                placeholder="123 Main St, City, TX"
-                className="w-full px-3 py-2 border border-white/20 bg-slate-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400" />
+              <AddressAutocomplete
+                value={address}
+                onChange={setAddress}
+                onGeocode={handleGeocode}
+                placeholder="Start typing an address..."
+              />
+              {geocodeResult?.found && geocodeResult?.jurisdictionName && (
+                <p className="text-xs text-emerald-400 mt-1">✓ {geocodeResult.jurisdictionName} detected</p>
+              )}
+              {geocodeResult?.found && !geocodeResult?.jurisdictionName && (
+                <p className="text-xs text-amber-400 mt-1">⚠ Address outside covered DFW jurisdictions — please select manually</p>
+              )}
             </div>
 
             <div>

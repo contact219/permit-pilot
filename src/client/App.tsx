@@ -14,6 +14,7 @@ import AdminUsers from './pages/Admin/Users';
 import AdminScraperLogs from './pages/Admin/ScraperLogs';
 import AdminScraperRun from './pages/Admin/ScraperRun';
 import About from './pages/About';
+import InstallPrompt from './components/InstallPrompt';
 import SharedProject from './pages/SharedProject';
 
 interface AppProps {}
@@ -72,6 +73,7 @@ export function App({}: AppProps) {
         </div>
       </nav>
 
+      <InstallPrompt />
       <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Switch>
           <Route path="/" component={Home} />

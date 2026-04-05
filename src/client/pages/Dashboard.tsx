@@ -22,7 +22,7 @@ export default function Dashboard() {
 
   useEffect(() => { if (error && (error as Error).message.includes('401')) navigate('/auth'); }, [error, navigate]);
 
-  const handleUpgrade = async (plan: 'contractor' | 'homeowner') => {
+  const handleUpgrade = async (plan: 'contractor' | 'agency') => {
     try { const { url } = await post<{ url: string }>('/api/billing/checkout', { planTier: plan }); window.location.href = url; }
     catch { alert('Failed to start checkout'); }
   };
@@ -66,7 +66,10 @@ export default function Dashboard() {
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {planTier === 'free' && (
-            <button onClick={() => handleUpgrade('contractor')} className="px-4 py-2 rounded-lg bg-cyan-500 text-slate-950 text-sm font-medium hover:bg-cyan-400">⚡ Upgrade to Contractor $29/mo</button>
+            <>
+              <button onClick={() => handleUpgrade('contractor')} className="px-4 py-2 rounded-lg bg-cyan-500 text-slate-950 text-sm font-medium hover:bg-cyan-400">⚡ Contractor $29/mo</button>
+              <button onClick={() => handleUpgrade('agency')} className="px-4 py-2 rounded-lg bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-400">🏢 Agency $99/mo</button>
+            </>
           )}
           {planTier !== 'free' && (
             <button onClick={async () => { const { url } = await get<{ url: string }>('/api/billing/portal'); window.location.href = url; }} className="px-4 py-2 rounded-lg bg-slate-700 text-white text-sm hover:bg-slate-600">Manage Subscription</button>

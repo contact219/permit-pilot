@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { db } from '../db.js';
 import { projects, projectPermits, jurisdictions, permitTypes, inspectionReminders } from '../../../db/schema.js';
 import { eq, and, desc, sql } from 'drizzle-orm';
+import { sendAnalysisCompleteEmail } from '../services/email.js';
 import { analyzeProject, parseNaturalLanguageProject, generateApplicationPacket } from '../services/claude.js';
 import { checkRateLimit } from '../services/rate-limit.js';
 
@@ -98,6 +99,7 @@ router.post('/:id/analyze', requireAuth, async (req: any, res: any) => {
         console.log('No DB match for code:', permit.code);
       }
     }
+    sendAnalysisCompleteEmail(req.user.email, project.name as string, req.params.id).catch(() => {});
     res.json({ analysis, rateLimit: rate });
   } catch (e) { console.error('Analysis error:', e); res.status(500).json({ error: 'Analysis failed' }); }
 });

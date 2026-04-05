@@ -15,7 +15,7 @@ function bondLikelyNeeded(permits: any[]): boolean {
 }
 
 function buildUrl(project: any, user: any, jurisdiction: any): string {
-  const base = "https://quantumsurety.bond/bonds/contractor-license";
+  const base = "https://quantumsurety.bond/quote";
   const p: Record<string, string> = { source: "permit-pilot", bond_type: "contractor_license", bond_amount: "25000" };
   if (user?.companyName) p.company = user.companyName;
   if (user?.email) p.email = user.email;

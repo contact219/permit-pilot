@@ -54,6 +54,10 @@ import apiV1Router from './routes/api-v1.js';
 app.use('/api/permit-runners', permitRunnersRouter);
 app.use('/api/v1', apiV1Router);
 
+// Sitemap
+import sitemapRouter from './routes/sitemap.js';
+app.use('/', sitemapRouter);
+
 // Public share route
 app.get('/api/share/:token', async (req: any, res: any) => {
   try {

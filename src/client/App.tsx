@@ -22,6 +22,9 @@ import TexasPoolPermits2026 from './pages/blog/TexasPoolPermits2026';
 import ContractorBondDFW2026 from './pages/blog/ContractorBondDFW2026';
 import RoomAdditionCollinCounty2026 from './pages/blog/RoomAdditionCollinCounty2026';
 import Blog from './pages/Blog';
+import Contact from './pages/Contact';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
 import InstallPrompt from './components/InstallPrompt';
 import SharedProject from './pages/SharedProject';
 
@@ -59,6 +62,7 @@ export function App({}: AppProps) {
                 <a href="/about" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">About</a>
                 <a href="/features" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Features</a>
                 <a href="/blog" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Blog</a>
+                <a href="/contact" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Contact</a>
                 {user.role === 'admin' && (
                   <a href="/admin" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Admin</a>
                 )}
@@ -77,6 +81,7 @@ export function App({}: AppProps) {
                 <a href="/about" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">About</a>
                 <a href="/features" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Features</a>
                 <a href="/blog" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Blog</a>
+                <a href="/contact" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Contact</a>
                 <a href="/#pricing" className="rounded-md px-3 py-1.5 text-slate-200 transition hover:bg-white/10">Pricing</a>
                 <a href="/auth" className="rounded-md bg-cyan-500 px-3 py-1.5 font-medium text-slate-950 transition hover:bg-cyan-400">Sign In</a>
               </>
@@ -107,12 +112,32 @@ export function App({}: AppProps) {
           <Route path="/blog/dfw-contractor-license-bond-requirements-2026" component={ContractorBondDFW2026} />
           <Route path="/blog/room-addition-permit-requirements-frisco-mckinney-allen-plano-2026" component={RoomAdditionCollinCounty2026} />
           <Route path="/blog" component={Blog} />
+          <Route path="/contact" component={Contact} />
+          <Route path="/privacy" component={Privacy} />
+          <Route path="/terms" component={Terms} />
           <Route path="/share/:token" component={SharedProject} />
           <Route path="/verify-email" component={VerifyEmail} />
           <Route path="/forgot-password" component={ForgotPassword} />
           <Route path="/reset-password" component={ResetPassword} />
         </Switch>
       </main>
+      <footer className="border-t border-white/10 mt-16 py-8 px-4">
+        <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded bg-gradient-to-br from-cyan-400 to-indigo-500 text-xs font-bold text-white">PP</span>
+            <span>© {new Date().getFullYear()} Permit Pilot — A Quantum Surety product</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <a href="/contact" className="hover:text-slate-300 transition">Contact</a>
+            <a href="/blog" className="hover:text-slate-300 transition">Blog</a>
+            <a href="/features" className="hover:text-slate-300 transition">Features</a>
+            <a href="/about" className="hover:text-slate-300 transition">About</a>
+            <a href="/privacy" className="hover:text-slate-300 transition">Privacy Policy</a>
+            <a href="/terms" className="hover:text-slate-300 transition">Terms of Service</a>
+            <a href="https://quantumsurety.bond" target="_blank" rel="noreferrer" className="hover:text-slate-300 transition">Quantum Surety</a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
